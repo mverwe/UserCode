@@ -247,7 +247,7 @@ SiPixelAnalyzer::SiPixelAnalyzer(const edm::ParameterSet& iConfig)
      treeEvent_->Branch("HFRecHitSum",&HFRecHitSum_);
 
      treePixelDigi_ = new TTree("PixelDigi", "PixelDigi information");
-     treePixelDigi_->Branch("nPixelDigi_",&nPixelDigi_);
+     treePixelDigi_->Branch("nPixelDigi",&nPixelDigi_);
      treePixelDigi_->Branch("pixelDigi_id",&pixelDigi_id_);
      treePixelDigi_->Branch("pixelDigi_detLayer",&pixelDigi_detLayer_);
      treePixelDigi_->Branch("pixelDigi_fedID",&pixelDigi_fedID_);
@@ -263,14 +263,14 @@ SiPixelAnalyzer::SiPixelAnalyzer(const edm::ParameterSet& iConfig)
      treePixelDigi_->Branch("moduleGeom_z",&moduleGeom_z_);
 
      treePixelRawDataError_ = new TTree("PixelRawDataError", "PixelRawDataError information");
-     treePixelRawDataError_->Branch("nError_",&nError_);
+     treePixelRawDataError_->Branch("nError",&nError_);
      treePixelRawDataError_->Branch("error_id",&error_id_);
      treePixelRawDataError_->Branch("error_detLayer",&error_detLayer_);
      treePixelRawDataError_->Branch("error_fedID",&error_fedID_);
      treePixelRawDataError_->Branch("error_type",&error_type_);
 
      treeFED_ = new TTree("FED", "FED information");
-     treeFED_->Branch("nFED_",&nFED_);
+     treeFED_->Branch("nFED",&nFED_);
      treeFED_->Branch("FED_id",&FED_id_);
      treeFED_->Branch("FED_occu_B_L1",&FED_occu_B_L1_);
      treeFED_->Branch("FED_occu_B_L2",&FED_occu_B_L2_);
