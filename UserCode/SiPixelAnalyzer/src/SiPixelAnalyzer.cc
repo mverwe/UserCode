@@ -244,6 +244,7 @@ SiPixelAnalyzer::SiPixelAnalyzer(const edm::ParameterSet& iConfig)
      treeEvent_->Branch("event",&event_);
      treeEvent_->Branch("lumi",&lumi_);
      treeEvent_->Branch("orbitNumber",&orbitNumber_);
+     treeEvent_->Branch("bunchCrossing",&bunchCrossing_);
      treeEvent_->Branch("HFRecHitSum",&HFRecHitSum_);
 
      treePixelDigi_ = new TTree("PixelDigi", "PixelDigi information");
@@ -615,7 +616,7 @@ SiPixelAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    bool belowDiagonal         = false;
    double FEDoccupancyThresholds[5]       = {1.5, 0.8, 0.3, 0.3, 0.3};
    double FEDoccupancyThresholds_lower[1] = {0.1};
-   int HFRecHitSumThresh = 30000;
+   int HFRecHitSumThresh = 70000;
 
    double FEDoccupancies[numFEDs][6] = { {0} };
    int numErrors[7] = { 0 };
