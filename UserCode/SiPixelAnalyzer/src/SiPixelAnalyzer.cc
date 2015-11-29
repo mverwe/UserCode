@@ -96,6 +96,7 @@ class SiPixelAnalyzer : public edm::EDAnalyzer {
 
   // ----------member data ---------------------------
   std::string outputFile_;
+  std::string outTreeName_;
   edm::InputTag src_;
 
   edm::EDGetTokenT<HFRecHitCollection> srcHFhits_;
@@ -106,6 +107,7 @@ class SiPixelAnalyzer : public edm::EDAnalyzer {
   unsigned int gnHModuleEndcap_;
   const TrackerGeometry* trGeo_;
   TFile* oFile_;
+  TFile* oTree_;
 
   TTree* treeEvent_;
   int run_;
@@ -215,12 +217,12 @@ SiPixelAnalyzer::SiPixelAnalyzer(const edm::ParameterSet& iConfig)
 {
    //now do what ever initialization is needed 
    outputFile_ = iConfig.getUntrackedParameter<string>("outputFile", "pixeldigihisto.root");
+   outTreeName_ = iConfig.getUntrackedParameter<string>("outTreeName", "pixeldigitree.root");
    src_ =  iConfig.getParameter<edm::InputTag>( "src" );
    
    srcHFhits_ = consumes<HFRecHitCollection>(iConfig.getParameter<edm::InputTag>("srcHFhits"));
 
     
-     oFile_ = new TFile((const char*)outputFile_.c_str(), "RECREATE");
      //FEDs studies---------------------------------------------------------------------
 //     FEDNt_ = new TNtuple("FED", "FED","fedid:links:roc",100000);
 //     LinksNt_= new TNtuple("Links", "Links","fedid:linkn:nHits",100000);
@@ -239,6 +241,8 @@ SiPixelAnalyzer::SiPixelAnalyzer(const edm::ParameterSet& iConfig)
 //     BarrelSlinkHitsDistrib_->SetDirectory(oFile_->GetDirectory(0));
  
      /////
+     oTree_ = new TFile((const char*)outTreeName_.c_str(), "RECREATE");
+   
      treeEvent_ = new TTree("Event", "event information");
      treeEvent_->Branch("run",&run_);
      treeEvent_->Branch("event",&event_);
@@ -280,6 +284,9 @@ SiPixelAnalyzer::SiPixelAnalyzer(const edm::ParameterSet& iConfig)
      treeFED_->Branch("FED_occu_EC_D2",&FED_occu_EC_D2_);
      treeFED_->Branch("FED_occu_B_L123",&FED_occu_B_L123_);
 
+     //histo inits
+     oFile_ = new TFile((const char*)outputFile_.c_str(), "RECREATE");
+     
      for(int i = 0; i<6; i++)
      {    
        if(i<3)      FEDOcc_[i] = new TH2D(Form("FEDOccupancy_B_L%d",i+1),Form("FED Occupancy (Barrel Layer%d);HF Energy Sum;Average FED Occupancy",i+1),40,0,300000,100,0,3);
@@ -885,7 +892,7 @@ void
 SiPixelAnalyzer::beginJob(const edm::EventSetup&)
 {
     
-  oFile_ = new TFile((const char*)outputFile_.c_str(), "RECREATE");
+  //  oFile_ = new TFile((const char*)outputFile_.c_str(), "RECREATE");
   //FEDs studies---------------------------------------------------------------------
   // FEDNt_ = new TNtuple("FED", "FED","fedid:links:roc",100000);
   // LinksNt_= new TNtuple("Links", "Links","fedid:linkn:nHits",100000);
