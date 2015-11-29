@@ -239,17 +239,17 @@ SiPixelAnalyzer::SiPixelAnalyzer(const edm::ParameterSet& iConfig)
 //     BarrelSlinkHitsDistrib_->GetYaxis()->SetTitle("Entries");
 //     BarrelSlinkHitsDistrib_->GetXaxis()->SetTitle("Hits per RO Link");
 //     BarrelSlinkHitsDistrib_->SetDirectory(oFile_->GetDirectory(0));
- 
-     /////
+
+      /////
      oTree_ = new TFile((const char*)outTreeName_.c_str(), "RECREATE");
-   
+     oTree_->cd();
      treeEvent_ = new TTree("Event", "event information");
      treeEvent_->Branch("run",&run_);
      treeEvent_->Branch("event",&event_);
      treeEvent_->Branch("lumi",&lumi_);
      treeEvent_->Branch("orbitNumber",&orbitNumber_);
-     treeEvent_->Branch("bunchCrossing",&bunchCrossing_);
      treeEvent_->Branch("HFRecHitSum",&HFRecHitSum_);
+     treeEvent_->SetDirectory(oTree_->GetDirectory(0));
 
      treePixelDigi_ = new TTree("PixelDigi", "PixelDigi information");
      treePixelDigi_->Branch("nPixelDigi",&nPixelDigi_);
@@ -266,14 +266,16 @@ SiPixelAnalyzer::SiPixelAnalyzer(const edm::ParameterSet& iConfig)
      treePixelDigi_->Branch("moduleGeom_phi",&moduleGeom_phi_);
      treePixelDigi_->Branch("moduleGeom_eta",&moduleGeom_eta_);
      treePixelDigi_->Branch("moduleGeom_z",&moduleGeom_z_);
-
+     treeEvent_->SetDirectory(oTree_->GetDirectory(0));
+     
      treePixelRawDataError_ = new TTree("PixelRawDataError", "PixelRawDataError information");
      treePixelRawDataError_->Branch("nError",&nError_);
      treePixelRawDataError_->Branch("error_id",&error_id_);
      treePixelRawDataError_->Branch("error_detLayer",&error_detLayer_);
      treePixelRawDataError_->Branch("error_fedID",&error_fedID_);
      treePixelRawDataError_->Branch("error_type",&error_type_);
-
+     treePixelRawDataError_->SetDirectory(oTree_->GetDirectory(0));
+     
      treeFED_ = new TTree("FED", "FED information");
      treeFED_->Branch("nFED",&nFED_);
      treeFED_->Branch("FED_id",&FED_id_);
@@ -283,7 +285,9 @@ SiPixelAnalyzer::SiPixelAnalyzer(const edm::ParameterSet& iConfig)
      treeFED_->Branch("FED_occu_EC_D1",&FED_occu_EC_D1_);
      treeFED_->Branch("FED_occu_EC_D2",&FED_occu_EC_D2_);
      treeFED_->Branch("FED_occu_B_L123",&FED_occu_B_L123_);
-
+     treeFED_->SetDirectory(oTree_->GetDirectory(0));
+  
+     
      //histo inits
      oFile_ = new TFile((const char*)outputFile_.c_str(), "RECREATE");
      
@@ -541,8 +545,6 @@ SiPixelAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
        int lumi = iEvent.id().luminosityBlock();
        std::cout << "------ run: " << run << "  lumi: " << lumi << " event: " << event << " HFESum: " << HFRecHitSum << std::endl;
    }
-//   std::cout << "hits->size() = " <<hits->size() << std::endl;
-//   std::cout << "HFRecHitSum  = " <<HFRecHitSum << std::endl;
 
    using namespace sipixelobjects;
 
@@ -550,8 +552,6 @@ SiPixelAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    BarrelColumnsOffset_ =0;
    gnHModuleEndcap_=0;
    EndcapColumnsOffset_ =0;
-
-//   start_analyze1 = std::clock();
 
    edm::Handle<edm::DetSetVector<PixelDigi> > pixelDigis;
    iEvent.getByLabel(src_, pixelDigis);
@@ -564,8 +564,6 @@ SiPixelAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
    edm::ESHandle<SiPixelFedCablingMap> map;
    iSetup.get<SiPixelFedCablingMapRcd>().get( map );
-//   const SiPixelFedCablingMap * theCablingMap = map.product();
-//   std::cout <<"Map number " << map->version() << std::endl;
    
    edm::ESHandle<TrackerGeometry> tracker;
    iSetup.get<TrackerDigiGeometryRecord>().get( tracker );    
@@ -579,11 +577,7 @@ SiPixelAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    typedef std::vector<const PixelFEDCabling *>::const_iterator FEDiter;
    edm::DetSetVector<PixelDigi>::const_iterator DSViter;   
 
-//   start_analyze2 = std::clock();
-
    int numFEDs = cabling.size();
-//   std::cout << "numFEDs = " << numFEDs << std::endl;
-//   int numPixelDigis_global = pixelDigis->size();
 
    std::vector<sipixelobjects::PixelROC> pixelROCs;
    std::vector<unsigned int> rawIDsROC;
@@ -613,8 +607,6 @@ SiPixelAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
      }
    }
 
-//   int numRawIDsROC = rawIDsROC.size();
-//   std::cout<< "numRawIDsROC = " << numRawIDsROC <<std::endl;
    uint32_t nhits[numFEDs][6] = { {0} };
    uint32_t totalPix[numFEDs][6] = { {0} };
 
@@ -623,7 +615,7 @@ SiPixelAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    bool belowDiagonal         = false;
    double FEDoccupancyThresholds[5]       = {1.5, 0.8, 0.3, 0.3, 0.3};
    double FEDoccupancyThresholds_lower[1] = {0.1};
-   int HFRecHitSumThresh = 70000;
+   int HFRecHitSumThresh = 30000;
 
    double FEDoccupancies[numFEDs][6] = { {0} };
    int numErrors[7] = { 0 };
@@ -700,11 +692,10 @@ SiPixelAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
        moduleGeom_z_.push_back(PixelModuleGeom->position().z());
    }
 
- //Loop over FEDs and calculate FED occupancy per layer
+   //Loop over FEDs and calculate FED occupancy per layer
    nFED_ = numFEDs;
    for(int j=0; j<numFEDs; ++j)
    {
-//       std::cout << "Fed id: " << j << std::endl;
        for(int i = 0; i<5; i++){
            if(totalPix[j][i]!=0) {
 
@@ -739,7 +730,6 @@ SiPixelAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
 
                FEDOcc_[i]->Fill(HFRecHitSum, FEDoccupancies[j][i]);
                FEDOcc_10xBin_[i]->Fill(HFRecHitSum, FEDoccupancies[j][i]);
-//               std::cout << "Layer: " << i << " Occupancy: " << 100.0*nhits[j][i]/((double)totalPix[j][i]) << std::endl;
            }
        }
        if ((totalPix[j][0]+totalPix[j][1]+totalPix[j][2])!=0) {
@@ -759,8 +749,6 @@ SiPixelAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    }
 
    // fill Errors vs. HFRecHitSum histogram
-//   std::cout<<"pixelDigis->size()         = "         <<pixelDigis->size()<<std::endl;
-//   std::cout<<"pixelRawDataErrors->size() = " <<pixelRawDataErrors->size()<<std::endl;
    edm::DetSetVector<SiPixelRawDataError>::const_iterator iter_Errors;
    nError_ = 0;
    for(iter_Errors = pixelRawDataErrors->begin(); iter_Errors!=pixelRawDataErrors->end(); ++iter_Errors)
@@ -776,8 +764,6 @@ SiPixelAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
            detLayer  = fdetid.disk()+2; //1, 2, 3 +2 for endcap
        }
 
-//       std::cout<<"iter_Errors->id          = "<<iter_Errors->id<<std::endl;
-//       std::cout<<"iter_Errors->data.size() = "<<iter_Errors->data.size()<<std::endl;
        edm::DetSet<SiPixelRawDataError>::const_iterator di;
        for(di = iter_Errors->data.begin(); di != iter_Errors->data.end(); di++) {
            nError_++;
@@ -788,11 +774,11 @@ SiPixelAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
            {
                numErrors_no3740[6]++;
            }
-
+           /*
            std::cout<<"di->errorMessage_ = "<< di->getMessage() <<std::endl;
            std::cout<<"di->getFedId()    = "<< FedId <<std::endl;
            std::cout<<"di->getType()     = "<< errorType <<std::endl;
-
+           */
            if (detLayer >= 0 && detLayer<=5){
                numErrors[detLayer]++;
                if (errorType != 37 && errorType != 40)
@@ -876,62 +862,15 @@ SiPixelAnalyzer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
    treePixelRawDataError_->Fill();
    treeFED_->Fill();
 
-//   std::cout << "numPixelDigis_global       = " << numPixelDigis_global << std::endl;
-
-//   end_analyze = std::clock();
    std::cout.precision(6);      // get back to default precision
-//   std::cout << "analyzer finished in             : " << (end_analyze - start_analyze) / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
-//   std::cout << "analyzer1 finished in            : " << (end_analyze - start_analyze1) / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
-//   std::cout << "analyzer2 finished in            : " << (end_analyze - start_analyze2) / (double)CLOCKS_PER_SEC << " seconds" << std::endl;
-//   std::cout << "finished, CLOCK_REALTIME         : " << (double)CLOCK_REALTIME << std::endl;
-     
 }
 
 // ------------ method called once each job just before starting event loop  ------------
 void 
 SiPixelAnalyzer::beginJob(const edm::EventSetup&)
 {
-    
-  //  oFile_ = new TFile((const char*)outputFile_.c_str(), "RECREATE");
-  //FEDs studies---------------------------------------------------------------------
-  // FEDNt_ = new TNtuple("FED", "FED","fedid:links:roc",100000);
-  // LinksNt_= new TNtuple("Links", "Links","fedid:linkn:nHits",100000);
-  // ROCOccNt_= new TNtuple("ROCOcc", "ROCOcc","idH:idL:ROCHits:SubDet:gHModule:ROCn:ModuleHits:nROCs",100000);
-     
-     
-  //Barrel Ntuples----------------------------------------------------------------------------
-  // BarrelModuleNt_ = new TNtuple("BarrelPixelDistrib", "BarrelPixelDistri","idH:idL:layer:ladder:ring:z:R:phi:eta:Mhits:HMod0Hits:HMod1Hits:ncolumns:nrows",100000);
-  // BarrelDigisNt_ = new TNtuple("BarrelDigis", "BarrelPixelDigisDist","idH:idL:layer:ladder:ring:adc:column:row",100000);
-  // BarrelColumnsNt_ = new TNtuple("BarrelColumnOcc", "BarrelColumnOcc","idH:idL:layer:ladder:ring:gHmodule:column:colHits:gcolumn",100000);
-  // BarrelDColumnsNt_ = new TNtuple("BarrelDColumnOcc", "BarrelDColumnOcc","idH:idL:layer:ladder:ring:gHmodule:Dcolumn:DcolHits:gDcolumn",100000);
-   
-  // //histos---------------------------------------------------------
-  // BarrelSlinkHitsDistrib_ = new TH1F("BarrelSlinkHitsDistrib", "Slink Hits -Barrel-", 801, 0., 800.);
-  // BarrelSlinkHitsDistrib_->GetYaxis()->SetTitle("Entries");
-  // BarrelSlinkHitsDistrib_->GetXaxis()->SetTitle("Hits per RO Link");
-  // BarrelSlinkHitsDistrib_->SetDirectory(oFile_->GetDirectory(0));
- 
-  // //Endcap Ntuples----------------------------------------------------------------------------
-  // EndcapModuleNt_ = new TNtuple("EndcapPixelDistrib", "EndcapPixelDistri","idH:idL:side:disk:blade:panel:module:z:R:phi:eta:HMod0Hits:HMod1Hits:ncolumns:nrows",100000);
-  // EndcapDigisNt_ = new TNtuple("EndcapDigis", "EndcapPixelDigisDist","idH:idL:side:disk:blade:panel:module:adc:column:row",100000);
-  // EndcapColumnsNt_ = new TNtuple("EndcapColumnOcc", "EndcapColumnOcc","idH:idL:side:disk:blade:panel:gHmodule:column:colHits:gcolumn",100000);
-  // EndcapDColumnsNt_ = new TNtuple("EndcapDColumnOcc", "EndcapDColumnOcc","idH:idL:side:disk:blade:panel:gHmodule:Dcolumn:DcolHits:gDcolumn",100000);
 
-  // //General histos---------------------------------------------------------
-  // DcolumnHits_ = new TH1F("DcolumnHits", "Hits per Dcolumn", 161, 0, 160);
-  // DcolumnHits_ ->GetYaxis()->SetTitle("Entries");
-  // DcolumnHits_->GetXaxis()->SetTitle("Hits per Dcolumn");
-  // DcolumnHits_->SetDirectory(oFile_->GetDirectory(0));
- 
-  // Occupancy_ = new TH1D("Occupancy", "Occupancy", 3001, 0., 3.);
-  // Occupancy_->GetYaxis()->SetTitle("Entries");
-  // Occupancy_->GetXaxis()->SetTitle("Occupancy [%]");
-  // Occupancy_->SetDirectory(oFile_->GetDirectory(0));
 
-  // OccupancyZ_ = new TH2D("OccupancyZ", "Occupancy", 1020, -51., 51., 3001, 0., 3.);
-  // OccupancyZ_->GetYaxis()->SetTitle("Occupancy [%]");
-  // OccupancyZ_->GetXaxis()->SetTitle("Z");
-  // OccupancyZ_->SetDirectory(oFile_->GetDirectory(0));
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
@@ -939,6 +878,9 @@ void
 SiPixelAnalyzer::endJob() {
    oFile_->Write();
    oFile_->Close();
+
+   oTree_->Write();
+   oTree_->Close();
 }
 
 
