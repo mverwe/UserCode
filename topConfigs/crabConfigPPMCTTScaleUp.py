@@ -2,7 +2,7 @@ from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
 config.section_('General')
-config.General.requestName = 'FilteredHighPtPhoton30AndZ_v2'
+config.General.requestName = 'MCTTScaleUp_v2'
 config.General.workArea = 'crab_projects'
 config.General.transferOutputs = True
 config.General.transferLogs = False
@@ -10,15 +10,18 @@ config.General.transferLogs = False
 
 config.section_('JobType')
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'runForestAOD_pp_DATA_75X_HighPtPhoton30AndZ.py'
+config.JobType.psetName = 'runForestAOD_pp_MC_75X.py'
 
 config.section_('Data')
-config.Data.inputDataset = '/HighPtPhoton30AndZ/Run2015E-PromptReco-v1/AOD'
+config.Data.inputDataset = '/TT_TuneCUETP8M1_5020GeV-powheg-scaleup-pythia8/HINppWinter16DR-75X_mcRun2_asymptotic_ppAt5TeV_v3-v1/AODSIM'
 #config.Data.inputDBS = 'phys03'
-config.Data.splitting = "EventAwareLumiBased"
-config.Data.unitsPerJob = 40000
-config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/5TeV/Cert_262081-262273_5TeV_PromptReco_Collisions15_25ns_JSON_v2.txt'
-config.Data.outLFNDirBase = '/store/group/cmst3/group/hintt/mverweij/PP5TeV/data'
+config.Data.splitting = 'FileBased'
+config.Data.unitsPerJob = 1
+#config.Data.splitting = "EventAwareLumiBased"
+#config.Data.unitsPerJob = 40000
+
+#config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/5TeV/Cert_262081-262273_5TeV_PromptReco_Collisions15_25ns_JSON_v2.txt'
+config.Data.outLFNDirBase = '/store/group/cmst3/group/hintt/mverweij/PP5TeV/MC'
 config.Data.publication = False #True
 config.Data.outputDatasetTag = ''
 
