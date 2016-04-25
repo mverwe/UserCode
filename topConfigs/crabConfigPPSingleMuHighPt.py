@@ -2,7 +2,7 @@ from CRABClient.UserUtilities import config, getUsernameFromSiteDB
 config = config()
 
 config.section_('General')
-config.General.requestName = 'FilteredSingleMuHighPt_v1'
+config.General.requestName = 'FilteredSingleMuHighPt_v3'
 config.General.workArea = 'crab_projects'
 config.General.transferOutputs = True
 config.General.transferLogs = False
@@ -16,8 +16,8 @@ config.section_('Data')
 config.Data.inputDataset = '/SingleMuHighPt/Run2015E-PromptReco-v1/AOD'
 #config.Data.inputDBS = 'phys03'
 config.Data.splitting = "EventAwareLumiBased"
-config.Data.unitsPerJob = 30000
-config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/5TeV/Cert_262081-262273_5TeV_PromptReco_Collisions15_25ns_JSON_v2.txt'
+config.Data.unitsPerJob = 50000
+config.Data.lumiMask = '/afs/cern.ch/cms/CAF/CMSCOMM/COMM_DQM/certification/Collisions15/5TeV/Cert_262081-262328_5TeV_PromptReco_Collisions15_25ns_JSON.txt'
 config.Data.outLFNDirBase = '/store/group/cmst3/group/hintt/mverweij/PP5TeV/data'
 config.Data.publication = False #True
 config.Data.outputDatasetTag = ''
